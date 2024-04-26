@@ -1,0 +1,47 @@
+import subprocess
+import flask
+import flask_restful
+
+
+def request_validation(data, *keys):
+    for key in keys:
+        if key not in data:
+            return False
+    return True
+
+
+class Example(flask_restful.Resource):
+    def get(self):
+        return 'hello'
+
+    def post(self):
+        return ''
+
+    def put(self):
+        return ''
+
+    def delete(self):
+        return ''
+
+
+def execute_command(command):
+    try:
+        result = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
+        return result.decode('utf-8')
+    except subprocess.CalledProcessError as e:
+        return e.output.decode('utf-8')
+
+
+class Executor(flask_restful.Resource):
+
+    def get(self):
+        command = flask.request.args.get('command', '')
+        return {'result': execute_command(command)}
+
+
+app = flask.Flask(__name__)
+api = flask_restful.Api(app)
+api.add_resource(Executor, '/execute')
+
+if __name__ == '__main__':
+    app.run(debug=True)
